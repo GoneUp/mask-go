@@ -1,0 +1,105 @@
+helpful: https://www.reddit.com/r/ReverseEngineering/comments/lr9xxr/comment/h14nm39/?utm_source=reddit&utm_medium=web2x&context=3
+
+
+to 9600
+
+
+scroll mode:
+05MODEnn 
+nn 01 = steady
+nn 02 = blink
+nn 03 = scroll left
+nn 04 = scroll right
+nn 05 = steady
+
+scroll left ccd4c4b5f2f41f617d56ee942ee4189a - dec 054d4f444503661a65c58086978c1e6e - 
+scroll right c349d8f0c3f0cb7235085767aaccf578 - dec 054d4f4445040cc05ea463180d2461ea
+blink 9a71b04fbd0aa02d594d6369ea996578 - dec 054d4f444502dd80fd1cb279fd43ede6
+steady 063bd99a997d030604917ce5285f7aba -  dec 054d4f44450103bdc6d53bc7150f06a8
+
+
+UPLOAD PROCESS:
+DATS > Mask
+Mask > DATSOK
+per packet
+  Upload ...
+  Mask > REOKOK
+DATCP > Mask
+Mask > DATCPOK
+
+
+
+text mode for test: 
+b149d13ff4d5d98f38460383d265379c - dec 0944415453 00a0 0040 00000000000000 - DATS�@
+160b msg - 64bitmap
+100 byte string - 6300 020002003ff83ffc020402040000000000f001f8034c0244034401cc00c80000018803cc024402640224033c01180000020002003ff83ffc0204020400000000 fffffcfffffcfffffcfffffcfffffcfffffcfffffcfffffcfffffcfffffcfffffcff
+100 byte string - 3f01 fffcfffffcfffffcfffffcfffffcfffffcfffffcfffffcfffffcfffffcfffffcfffffcfffffcfffffcfffffcfffffcfffffcfffffcfffffcfffffcfffffc000000000000000000000000000000000000000000000000000000000000000000000000
+e799ad01aa48ae0aee0b7203e8ede520 - dec 05444154435000000000000000000000 - DATCP
+c7b560b9d1cee5817c1f175a202cc5d1 - dev 054d4f44450160f54223b099eea19e00 - steady mode
+7b77ad0896fe9c3b9a849feab57687ad - dec 065350454544329d84c247666b6971a3 - 06 SPEED2 
+
+bitmap
+020002003ff83ffc020402040000000000f001f8034c0244034401cc00c80000018803cc024402640224033c01180000020002003ff83ffc0204020400000000 
+fffffcfffffcfffffcfffffcfffffcfffffcfffffcfffffcfffffcfffffcfffffcfffffcfffffcfffffcfffffcfffffcfffffcfffffcfffffcfffffcfffffcfffffcfffffcfffffcfffffcfffffcfffffcfffffcfffffcfffffcfffffcfffffc
+
+
+
+09DATS - 2 byte total len - 2 byte bitmap len 
+sending of text test4:
+6e76433f235ddd1e19790e98c7b7791c - dec 0944415453 00c8 0050 00000000000000  DATS�P
+200b msg
+-> 06444154534f4b005000000000000001 DATSOKP
+6300 020002003ff83ffc020402040000000000f001f8034c0244034401cc00c80000018803cc024402640224033c01180000020002003ff83ffc0204020400000000006001a0062018207ffc002000000000fffffcfffffcfffffcfffffcfffffcfffffc
+-> 0452454f4b4f4b005000000000000002 REOKOKP
+6301 fffffcfffffcfffffcfffffcfffffcfffffcfffffcfffffcfffffcfffffcfffffcfffffcfffffcfffffcfffffcfffffcfffffcfffffcfffffcfffffcfffffcfffffcfffffcfffffcfffffcfffffcfffffcfffffcfffffcfffffcfffffcfffffcffff
+-> 0452454f4b4f4b005000000000000003 REOKOKP
+0502 fcfffffc00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+-> 0452454f4b4f4b005000000000000004 REOKOKP
+dec 05444154435000000000000000000000 DATCP
+dec 054d4f444501b18ea2274a90cd6a0e93 - steady mode
+
+
+first curLedData
+then 3rgb curDataColorArray
+one bitmap 16x16, one letter 8x16
+
+char bitmap encodded as bits 2b = one line 
+32b per encoded char bitmap
+16b per predefined char?
+width = b / 2
+per line one rgb color block
+
+colums: 4 * 8 = 32
+char map: 32 * 2 = 64
+rgb array: 32 * 3 = 96 
+== 160! 
+
+ex: 8 colums, 12b text, 24b color = 36
+FFFF0000 FFFF0000 FFFF0000 FFFF0000  FF0000 FF0000 00FF00 00FF00 FF0000 FF0000 00FF00 00FF00
+
+full spec data:
+  for each column (8 for char, 16 for bitmap):
+    column encoded in 2b 
+      b1: line 0-7, bit 0-7
+      b2: line 7-15, bit 0-7
+  for each colum
+    3 byte RGB
+
+sending in the format of max 100b packets:
+  <len with count><count><data, max 98b>
+
+
+custom text front color:
+06FC<00/01> <RR> <BB> <GG>
+
+custom text back color:
+06BC<00/01> <RR> <BB> <GG>
+
+speed:
+06SPEEDnn
+
+set text color mode:
+03M<00/01><00-07>
+
+00-03= text gradients 
+05-07= background animations
