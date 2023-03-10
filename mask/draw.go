@@ -1,4 +1,4 @@
-package main
+package mask
 
 import (
 	"encoding/binary"
@@ -66,7 +66,7 @@ func GetTextImage(text string) [][]byte {
 
 	grayImg := image.NewRGBA(img.Rect)
 	binaryMap, _ := getPixels(img, grayImg)
-	log.Debugf("gray pixels %v", binaryMap)
+	log.Tracef("gray pixels %v", binaryMap)
 
 	//test write
 	out, _ = os.Create("gray.png")
@@ -85,7 +85,7 @@ func getPixels(img image.Image, grayImg *image.RGBA) ([][]byte, error) {
 	for x := 0; x < width; x++ {
 		var column []byte
 		for y := 0; y < height; y++ {
-			log.Info(img.At(x, y).RGBA())
+			log.Trace(img.At(x, y).RGBA())
 			r, g, b, _ := img.At(x, y).RGBA()
 			gry := 0.299*float64(r) + 0.587*float64(g) + 0.114*float64(b)
 			var binaryVal byte
@@ -194,6 +194,7 @@ func EncodeBitmapForMask(bitmap [][]byte) ([]byte, error) {
 }
 
 func EncodeColorArrayForMask(columns int) []byte {
+	//white text
 	results := make([]byte, 0)
 	for i := 0; i < columns; i++ {
 		results = append(results, []byte{0xFF, 0xFF, 0xFF}...)
