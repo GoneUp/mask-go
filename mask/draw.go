@@ -8,7 +8,6 @@ import (
 	"io/ioutil"
 	"os"
 
-	log "github.com/sirupsen/logrus"
 	"golang.org/x/image/math/fixed"
 
 	"github.com/flopp/go-findfont"

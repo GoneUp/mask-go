@@ -24,14 +24,6 @@ type uploadBuffer struct {
 	packetCount    byte
 }
 
-var (
-	msg01 = mask.EncryptAes128Hex("054d4f444503661a65c58086978c1e6e")
-	msg02 = mask.EncryptAes128Hex("054d4f4445040cc05ea463180d2461ea")
-	msg03 = mask.EncryptAes128Hex("054d4f444502dd80fd1cb279fd43ede6")
-)
-
-//found device: 00:4A:00:04:C3:11 -78 MASK-04C311
-
 func init() {
 	log.SetLevel(log.DebugLevel)
 }
@@ -50,7 +42,7 @@ func main() {
 
 	log.SetReportCaller(true)
 	log.Info("MaskCmd started. Connecting to mask...")
-	err := mask.InitAndConnect()
+	err := mask.InitAndConnect(true)
 	if err != nil {
 		log.Fatalf("Init failed with error %v", err)
 	}
@@ -68,16 +60,15 @@ func doDemoControlLoop() {
 
 		switch cmdSplit[0] {
 		case "connect":
-			err := mask.InitAndConnect()
+			err := mask.InitAndConnect(true)
 			if err != nil {
 				log.Fatalf("Init failed with error %v", err)
 			}
-		
 
 		case "allmode":
 			for i := 1; i < 5; i++ {
 				log.Infof("trying to send mode %d\n", i)
-				mask.MaskSetMode(byte(i))
+				mask.SetMode(byte(i))
 				time.Sleep(5 * time.Second)
 			}
 
@@ -85,49 +76,42 @@ func doDemoControlLoop() {
 			val, err := strconv.ParseUint(cmdSplit[1], 10, 8)
 			must("ParseInt", err)
 
-			mask.MaskSetMode(byte(val))
-
-		case "mode2":
-			log.Info("trying to send play 01")
-			mask.SendRawData(msg01)
-			time.Sleep(5 * time.Second)
-
-			log.Info("trying to send play 02")
-			mask.SendRawData(msg02)
-			time.Sleep(5 * time.Second)
-
-			log.Info("trying to send play 03")
-			mask.SendRawData(msg03)
-			time.Sleep(5 * time.Second)
+			mask.SetMode(byte(val))
 
 		case "light":
 			val, err := strconv.ParseUint(cmdSplit[1], 10, 8)
 			must("ParseInt", err)
 
-			mask.MaskSetLight(byte(val))
+			mask.SetLight(byte(val))
 
 		case "image":
 			val, err := strconv.ParseUint(cmdSplit[1], 10, 8)
 			must("ParseInt", err)
 
-			mask.MaskSetImage(byte(val))
+			mask.SetImage(byte(val))
+
+		case "diy":
+			val, err := strconv.ParseUint(cmdSplit[1], 10, 8)
+			must("ParseInt", err)
+
+			mask.SetDIYImage(byte(val))
 
 		case "speed":
 			val, err := strconv.ParseUint(cmdSplit[1], 10, 8)
 			must("ParseInt", err)
 
-			mask.MaskSetSpeed(byte(val))
+			mask.SetTextSpeed(byte(val))
 
 		case "color":
 			val, err := strconv.ParseUint(cmdSplit[1], 10, 8)
 			must("ParseInt", err)
 
-			mask.MaskSetTextColorMode(1, byte(val))
+			mask.SetTextColorMode(1, byte(val))
 
 		case "fg":
 			c, err := colorx.ParseHexColor(cmdSplit[1])
 			if err == nil {
-				mask.MaskSetTextFrontColor(1, c.R, c.G, c.B)
+				mask.SetTextFrontColor(1, c.R, c.G, c.B)
 			} else {
 				log.Warn("wrong format, use #FFFFFF")
 			}
@@ -137,7 +121,7 @@ func doDemoControlLoop() {
 			must("ParseHexColor", err)
 
 			if err == nil {
-				mask.MaskSetTextBackgroundColor(1, c.R, c.G, c.B)
+				mask.SetTextBackgroundColor(1, c.R, c.G, c.B)
 			} else {
 				log.Warn("wrong format, use #FFFFFF")
 			}
@@ -150,7 +134,7 @@ func doDemoControlLoop() {
 				0xFF, 0x00, 0x00, 0xFF, 0x00, 0x00,
 				0x00, 0xFF, 0x00, 0x00, 0xFF, 0x00}
 
-			mask.MaskInitUpload(bitmap, colorArray)
+			mask.InitUpload(bitmap, colorArray)
 		case "text2":
 			//decoded from bt dump, sets test as text
 			bitmap, err := hex.DecodeString("020002003ff83ffc020402040000000000f001f8034c0244034401cc00c80000018803cc024402640224033c01180000020002003ff83ffc0204020400000000")
@@ -158,14 +142,14 @@ func doDemoControlLoop() {
 			colorArray, err := hex.DecodeString("fffffcfffffcfffffcfffffcfffffcfffffcfffffcfffffcfffffcfffffcfffffcfffffcfffffcfffffcfffffcfffffcfffffcfffffcfffffcfffffcfffffcfffffcfffffcfffffcfffffcfffffcfffffcfffffcfffffcfffffcfffffcfffffc")
 			must("decode", err)
 
-			mask.MaskInitUpload(bitmap, colorArray)
+			mask.InitUpload(bitmap, colorArray)
 
 		case "text3":
 			//text3 jonasjemmy hat Köngisrose x1 gesendet
 			text := strings.TrimPrefix(cmd, "text3 ")
 			text = strings.TrimSpace(text)
 
-			mask.MaskSetText(text)
+			mask.SetText(text)
 
 		case "exit":
 			mask.Shutdown()

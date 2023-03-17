@@ -7,7 +7,7 @@ import (
 	"strings"
 	"time"
 
-	log "github.com/sirupsen/logrus"
+	logrus "github.com/sirupsen/logrus"
 	"tinygo.org/x/bluetooth"
 )
 
@@ -32,7 +32,16 @@ var uploadBtChar *bluetooth.DeviceCharacteristic
 const btMaxPacketSize int = 100 //packets above this size are not accepted by the mask, relevant for text upload
 const btPaddedPacketSize byte = 16
 
-func InitAndConnect() error {
+var log logrus.Logger
+
+func InitAndConnect(MoreLogging bool) error {
+	log = *logrus.New()
+	if MoreLogging {
+		log.SetLevel(logrus.InfoLevel)
+	} else {
+		log.SetLevel(logrus.WarnLevel)
+	}
+
 	// Enable BLE interface.
 	must("enable BLE stack", adapter.Enable())
 
@@ -105,12 +114,16 @@ func InitAndConnect() error {
 
 	if genralBtChar == nil || uploadBtChar == nil || uploadNotificationBtChar == nil {
 		log.Error("one of the bt chars is nil!")
-		return fmt.Errorf("bt char is nil!")
+		return fmt.Errorf("bt char is nil")
 	}
 	log.Info("generall ", genralBtChar.String())
 
 	err = uploadNotificationBtChar.EnableNotifications(maskUploadCallback)
 	must("mask notify", err)
+
+	//reset state
+	uploadRunning = false
+	currentUpload = uploadBuffer{}
 	return nil
 }
 
@@ -122,13 +135,17 @@ func Shutdown() {
 	}
 }
 
+func IsConnected() bool {
+	return btDevice != nil
+}
+
 // Sets the scroll mode
 // 01 = steady
 // 02 = blink
 // 03 = scroll left
 // 04 = scroll right
 // 05 = steady
-func MaskSetMode(mode byte) {
+func SetMode(mode byte) error {
 	modeStr := []byte("MODE")
 
 	buf := []byte{}
@@ -139,11 +156,11 @@ func MaskSetMode(mode byte) {
 	buf = padByteArray(buf, btPaddedPacketSize)
 	log.Debug("out: ", buf)
 
-	SendDataToBtChar(genralBtChar, EncryptAes128(buf))
+	return SendDataToBtChar(genralBtChar, EncryptAes128(buf))
 }
 
 // Sets how bright the thing is
-func MaskSetLight(brightness byte) {
+func SetLight(brightness byte) error {
 	modeStr := []byte("LIGHT")
 
 	buf := []byte{}
@@ -154,11 +171,11 @@ func MaskSetLight(brightness byte) {
 	buf = padByteArray(buf, btPaddedPacketSize)
 	log.Debug("out: ", buf)
 
-	SendDataToBtChar(genralBtChar, EncryptAes128(buf))
+	return SendDataToBtChar(genralBtChar, EncryptAes128(buf))
 }
 
 // Sets a static predefined image
-func MaskSetImage(image byte) {
+func SetImage(image byte) error {
 	modeStr := []byte("IMAG")
 
 	buf := []byte{}
@@ -169,11 +186,11 @@ func MaskSetImage(image byte) {
 	buf = padByteArray(buf, btPaddedPacketSize)
 	log.Debug("out: ", buf)
 
-	SendDataToBtChar(genralBtChar, EncryptAes128(buf))
+	return SendDataToBtChar(genralBtChar, EncryptAes128(buf))
 }
 
 // Sets static predefined animation
-func MaskSetAnim(image byte) {
+func SetAnimation(image byte) error {
 	modeStr := []byte("ANIM")
 
 	buf := []byte{}
@@ -184,11 +201,27 @@ func MaskSetAnim(image byte) {
 	buf = padByteArray(buf, btPaddedPacketSize)
 	log.Debug("out: ", buf)
 
-	SendDataToBtChar(genralBtChar, EncryptAes128(buf))
+	return SendDataToBtChar(genralBtChar, EncryptAes128(buf))
+}
+
+// Sets DIY iamge
+func SetDIYImage(image byte) error {
+	modeStr := []byte("PLAY")
+
+	buf := []byte{}
+	buf = append(buf, 6) //len
+	buf = append(buf, modeStr...)
+	buf = append(buf, byte(1))
+	buf = append(buf, image)
+
+	buf = padByteArray(buf, btPaddedPacketSize)
+	log.Debug("out: ", buf)
+
+	return SendDataToBtChar(genralBtChar, EncryptAes128(buf))
 }
 
 // Sets speed, range 0-255
-func MaskSetSpeed(speed byte) {
+func SetTextSpeed(speed byte) error {
 	modeStr := []byte("SPEED")
 
 	buf := []byte{}
@@ -199,14 +232,14 @@ func MaskSetSpeed(speed byte) {
 	buf = padByteArray(buf, btPaddedPacketSize)
 	log.Debug("out: ", buf)
 
-	SendDataToBtChar(genralBtChar, EncryptAes128(buf))
+	return SendDataToBtChar(genralBtChar, EncryptAes128(buf))
 }
 
 // For text mode: sets special backgrounds
 // mode:
-// 00-03= text gradients
-// 05-07= background animations
-func MaskSetTextColorMode(enable byte, mode byte) {
+// 00-03= text gradients ()
+// 04-07= background image (4 = x mask, 5 = christmas, 6 = love, 7 = scream)
+func SetTextColorMode(enable byte, mode byte) error {
 	modeStr := []byte("M")
 
 	buf := []byte{}
@@ -218,11 +251,11 @@ func MaskSetTextColorMode(enable byte, mode byte) {
 	buf = padByteArray(buf, btPaddedPacketSize)
 	log.Debug("out: ", buf)
 
-	SendDataToBtChar(genralBtChar, EncryptAes128(buf))
+	return SendDataToBtChar(genralBtChar, EncryptAes128(buf))
 }
 
 // Sets a foreground text color in RGB
-func MaskSetTextFrontColor(enable byte, r byte, g byte, b byte) {
+func SetTextFrontColor(enable byte, r byte, g byte, b byte) error {
 	modeStr := []byte("FC")
 
 	buf := []byte{}
@@ -236,11 +269,11 @@ func MaskSetTextFrontColor(enable byte, r byte, g byte, b byte) {
 	buf = padByteArray(buf, btPaddedPacketSize)
 	log.Debug("out: ", buf)
 
-	SendDataToBtChar(genralBtChar, EncryptAes128(buf))
+	return SendDataToBtChar(genralBtChar, EncryptAes128(buf))
 }
 
 // Sets a background text color in RGB
-func MaskSetTextBackgroundColor(enable byte, r byte, g byte, b byte) {
+func SetTextBackgroundColor(enable byte, r byte, g byte, b byte) error {
 	modeStr := []byte("BG")
 
 	buf := []byte{}
@@ -254,7 +287,7 @@ func MaskSetTextBackgroundColor(enable byte, r byte, g byte, b byte) {
 	buf = padByteArray(buf, btPaddedPacketSize)
 	log.Debug("out: ", buf)
 
-	SendDataToBtChar(genralBtChar, EncryptAes128(buf))
+	return SendDataToBtChar(genralBtChar, EncryptAes128(buf))
 }
 
 // UPLOAD
@@ -269,7 +302,9 @@ func MaskSetTextBackgroundColor(enable byte, r byte, g byte, b byte) {
 	Mask > DATCPOK
 */
 
-func MaskSetText(text string) error {
+// Comfort function that generates an image/bitmap from an string and starts the upload to the mask
+// Text Color=White
+func SetText(text string) error {
 	pixelMap := GetTextImage(text)
 	bitmap, err := EncodeBitmapForMask(pixelMap)
 	if err != nil {
@@ -279,17 +314,20 @@ func MaskSetText(text string) error {
 	colorArray := EncodeColorArrayForMask(len(pixelMap))
 	log.Infof("For text %s: bitmap len %d, color array len %d", text, len(bitmap), len(colorArray))
 
-	MaskInitUpload(bitmap, colorArray)
-	return nil
+	return InitUpload(bitmap, colorArray)
 }
 
-func MaskInitUpload(bitmap []byte, colorArray []byte) error {
+func InitUpload(bitmap []byte, colorArray []byte) error {
+	if !IsConnected() {
+		return fmt.Errorf("not connected")
+	}
 	if uploadRunning {
 		log.Warn("Mask upload is already running!")
 		return fmt.Errorf("mask upload already running")
 	}
 
 	//prep struct
+	currentUpload = uploadBuffer{}
 	currentUpload.bitmap = bitmap
 	currentUpload.colorArray = colorArray
 	currentUpload.totalLen = uint16(len(currentUpload.bitmap) + len(currentUpload.colorArray))
@@ -297,9 +335,9 @@ func MaskInitUpload(bitmap []byte, colorArray []byte) error {
 	currentUpload.completeBuffer = make([]byte, 0)
 	currentUpload.completeBuffer = append(currentUpload.completeBuffer, currentUpload.bitmap...)
 	currentUpload.completeBuffer = append(currentUpload.completeBuffer, currentUpload.colorArray...)
-	log.Info(currentUpload.bitmap)
-	log.Info(currentUpload.colorArray)
-	log.Info(currentUpload.completeBuffer)
+	log.Debug("bitmap: ", currentUpload.bitmap)
+	log.Debug("colorArray: ", currentUpload.colorArray)
+	//log.Debug("completeBuffer: ", currentUpload.completeBuffer)
 
 	//09DATS - 2 byte total len - 2 byte bitmap len
 	modeStr := []byte("DATS")
@@ -318,11 +356,13 @@ func MaskInitUpload(bitmap []byte, colorArray []byte) error {
 	buf = append(buf, byte(0))
 
 	buf = padByteArray(buf, btPaddedPacketSize)
-	log.Infof("Init upload totlen %d, bit len %d out: %v", currentUpload.totalLen, len(currentUpload.bitmap), buf)
+	log.Infof("Upload Init upload totlen %d, bit len %d out: %v", currentUpload.totalLen, len(currentUpload.bitmap), buf)
 
-	SendDataToBtChar(genralBtChar, EncryptAes128(buf))
-	uploadRunning = true
-	return nil
+	err := SendDataToBtChar(genralBtChar, EncryptAes128(buf))
+	if err == nil {
+		uploadRunning = true
+	}
+	return err
 }
 
 func maskUploadCallback(encBuffer []byte) {
@@ -330,7 +370,7 @@ func maskUploadCallback(encBuffer []byte) {
 	strLen := buf[0]
 	resp := string(buf[1 : strLen+1])
 
-	log.Infof("data: %v, hex: %s, parsed resp %s", buf, hex.EncodeToString(buf), resp)
+	log.Infof("Callback data: %v, hex: %s, parsed resp %s", buf, hex.EncodeToString(buf), resp)
 
 	if resp == "DATSOK" {
 		//ok, we can start to send
@@ -344,6 +384,8 @@ func maskUploadCallback(encBuffer []byte) {
 	} else if resp == "DATCPOK" {
 		//yay we are done
 		uploadRunning = false
+	} else if resp == "PLAYOK" {
+		//do nothing, resp to diy image
 	} else {
 		log.Warnf("unknown notify response: %s", resp)
 	}
@@ -422,7 +464,7 @@ func SendDataToBtChar(device *bluetooth.DeviceCharacteristic, sendbuf []byte) er
 		// This performs a "write command" aka "write without response".
 		_, err := device.WriteWithoutResponse(part)
 		if err != nil {
-			log.Info("could not send:", err.Error())
+			log.Error("could not send: ", err)
 			return err
 		}
 	}
