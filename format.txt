@@ -1,8 +1,6 @@
 helpful: https://www.reddit.com/r/ReverseEngineering/comments/lr9xxr/comment/h14nm39/?utm_source=reddit&utm_medium=web2x&context=3
 
 
-to 9600
-
 
 scroll mode:
 05MODEnn 
@@ -23,7 +21,7 @@ DATS > Mask
 Mask > DATSOK
 per packet
   Upload ...
-  Mask > REOKOK
+  Mask > REOK
 DATCP > Mask
 Mask > DATCPOK
 
@@ -74,11 +72,11 @@ char map: 32 * 2 = 64
 rgb array: 32 * 3 = 96 
 == 160! 
 
-ex: 8 colums, 12b text, 24b color = 36
+ex: 8 colums, 12b pixels, 24b color = 36
 FFFF0000 FFFF0000 FFFF0000 FFFF0000  FF0000 FF0000 00FF00 00FF00 FF0000 FF0000 00FF00 00FF00
 
-full spec data:
-  for each column (8 for char, 16 for bitmap):
+full image data spec:
+  for each column:
     column encoded in 2b 
       b1: line 0-7, bit 0-7
       b2: line 7-15, bit 0-7

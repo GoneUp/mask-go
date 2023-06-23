@@ -297,7 +297,7 @@ func SetTextBackgroundColor(enable byte, r byte, g byte, b byte) error {
 	Mask > DATSOKP
 	per packet
 		Upload ...
-		Mask > REOKOKP
+		Mask > REOK
 		DATCP > Mask
 	Mask > DATCPOK
 */
@@ -451,6 +451,11 @@ func SendRawData(sendbuf []byte) error {
 
 // SendRawData sends a byte buffer to the specifed char, breaking it up if the buffer is to big
 func SendDataToBtChar(device *bluetooth.DeviceCharacteristic, sendbuf []byte) error {
+	if device == nil {
+		log.Error("bt char is not connected or usable")
+		return fmt.Errorf("bt char is not connected or usable")
+	}
+
 	log.Debugf("sendStuff (len %d): %v\n", len(sendbuf), sendbuf)
 	// Send the sendbuf after breaking it up in pieces.
 	for len(sendbuf) != 0 {
