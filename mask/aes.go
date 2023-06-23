@@ -54,5 +54,3 @@ func DecryptAes128Ecb(data []byte) []byte {
 
 	return decrypted
 }
-
-

@@ -7,7 +7,7 @@ import (
 	"os"
 )
 
-//mini tool do decrypt shining mask aes-ecb
+// mini tool do decrypt shining mask aes-ecb
 func main() {
 	if len(os.Args) <= 1 {
 		fmt.Println("usage: ./aes [hexstring, length must be divisable by 16]")

@@ -3,11 +3,12 @@ package main
 import (
 	"bufio"
 	"flag"
-	"mask-go/mask"
 	"os"
 	"strconv"
 	"strings"
 	"time"
+
+	"github.com/GoneUp/mask-go/mask"
 
 	"encoding/hex"
 
