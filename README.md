@@ -13,12 +13,12 @@ Features:
 ![](image.png)
 ## Usage
 Installation with
-`go get https://github.com/GoneUp/mask-go`
+`go get github.com/GoneUp/mask-go`
 
 
 Simple usage example
 ```go
-import "mask-go/mask"
+import "github.com/GoneUp/mask-go/mask"
 
 mask.InitAndConnect(true)
 mask.SetText("Hello world")
