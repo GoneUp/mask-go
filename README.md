@@ -1,16 +1,16 @@
 # mask-go
-A shining mask implementation writen in Golang. It is intended to be used with masks controlled by the Shining mask app.
+A shining mask implementation written in Golang. It is intended to be used with masks controlled by the Shining mask app.
 
 It seems that there are several different vendor models avaialable, but they share the same app/protocol. E.g. `Lumen Couture LED Face Changing Mask`.
 
-"Normal android control app": https://play.google.com/store/apps/details?id=cn.com.heaton.shiningmask
+[Play store link of the control app](https://play.google.com/store/apps/details?id=cn.com.heaton.shiningmask)
 
 Features: 
 - Connection with mask over BLE (using tinygo.org/x/bluetooth)
 - Controlling the mask remotely (Brightness, Static image, Anmination, Text speed, Text color) 
 - Uploading/showing text on the mask 
 
-image.png![](image.png)
+![](image.png)
 ## Usage
 Installation with
 `go get https://github.com/GoneUp/mask-go`
@@ -24,7 +24,7 @@ mask.InitAndConnect(true)
 mask.SetText("Hello world")
 ```
 
-A demo application is included in the [main.go] file.
+A demo application is included in the [main.go](main.go) file.
 
 
 ## Protocol 
@@ -35,7 +35,7 @@ Please review this reddit post, it contains all basic protocol details and the A
 The most complicated bit of the mask-go is the text upload. The mask just accepts a bitmap/colors in a very custom format. 
 So to upload text, we have to draw it to a bitmap, convert it accordingly to the protcol and send it in custom manner to the app.
 
-The protocol is implemented in [mask.go] and [draw.go].
+The protocol is implemented in [mask.go](mask/mask.go) and [draw.go](mask/draw.go).
 
 Braindumping protocol details:
 
@@ -115,8 +115,6 @@ Implemented in draw.go
 sending in the format of max 100b packets:
   <len with count><pkt count><data, max 98b>
 ```
-
-
 
 
 ## Credits
