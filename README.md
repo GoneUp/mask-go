@@ -10,6 +10,7 @@ Features:
 - Controlling the mask remotely (Brightness, Static image, Anmination, Text speed, Text color) 
 - Uploading/showing text on the mask 
 
+image.png![](image.png)
 ## Usage
 Installation with
 `go get https://github.com/GoneUp/mask-go`
