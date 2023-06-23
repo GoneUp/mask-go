@@ -16,14 +16,6 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-type uploadBuffer struct {
-	bitmap         []byte
-	colorArray     []byte
-	completeBuffer []byte
-	totalLen       uint16
-	bytesSent      uint16
-	packetCount    byte
-}
 
 func init() {
 	log.SetLevel(log.DebugLevel)

@@ -26,7 +26,7 @@ mask.SetText("Hello world")
 
 A demo application is included in the [main.go](main.go) file.
 
-
+GoDoc can be found [here](https://pkg.go.dev/github.com/GoneUp/mask-go) 
 ## Protocol 
 The mask commuicates over Bluetooth LE with the mask. The protocol iself is fairly simply, however there is a AES ECB encryption. 
 
