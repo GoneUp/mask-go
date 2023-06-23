@@ -1,4 +1,4 @@
-module mask-go
+module github.com/GoneUp/mask-go
 
 go 1.18
 
