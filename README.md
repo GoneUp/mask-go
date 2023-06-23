@@ -34,6 +34,8 @@ Please review this reddit post, it contains all basic protocol details and the A
 The most complicated bit of the mask-go is the text upload. The mask just accepts a bitmap/colors in a very custom format. 
 So to upload text, we have to draw it to a bitmap, convert it accordingly to the protcol and send it in custom manner to the app.
 
+The protocol is implemented in [mask.go] and [draw.go].
+
 Braindumping protocol details:
 
 ```

@@ -15,6 +15,7 @@ import (
 	"github.com/golang/freetype/truetype"
 )
 
+// GetTextImage generates a bitmap out of a text using the font NotoSans
 func GetTextImage(text string) [][]byte {
 	fontPath, err := findfont.Find("NotoSans-Regular.ttf")
 	if err != nil {
@@ -113,6 +114,7 @@ func getWidthOfString(c *freetype.Context, s string) (fixed.Point26_6, error) {
 	return p, err
 }
 
+// EncodeBitmapForMask converts a bitmap to the custom mask format. Height must be 16 pixel.
 func EncodeBitmapForMask(bitmap [][]byte) ([]byte, error) {
 	/*
 			    column encoded in 2b
@@ -192,6 +194,7 @@ func EncodeBitmapForMask(bitmap [][]byte) ([]byte, error) {
 	return results, nil
 }
 
+// EncodeColorArrayForMask envodes a white color array
 func EncodeColorArrayForMask(columns int) []byte {
 	//white text
 	results := make([]byte, 0)

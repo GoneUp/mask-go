@@ -34,6 +34,10 @@ const btPaddedPacketSize byte = 16
 
 var log logrus.Logger
 
+// InitAndConnect searches and connects to a mask over BLE
+// BLE must be enabled
+// Blocking until a mask is found
+// MoreLogging is showing debug output
 func InitAndConnect(MoreLogging bool) error {
 	log = *logrus.New()
 	if MoreLogging {
@@ -135,6 +139,7 @@ func Shutdown() {
 	}
 }
 
+// IsConnected checks if a mask is connected
 func IsConnected() bool {
 	return btDevice != nil
 }
@@ -317,6 +322,7 @@ func SetText(text string) error {
 	return InitUpload(bitmap, colorArray)
 }
 
+// InitUpload starts the bitmap upload process
 func InitUpload(bitmap []byte, colorArray []byte) error {
 	if !IsConnected() {
 		return fmt.Errorf("not connected")
